@@ -45,6 +45,7 @@ window.onload=function(){
 		
 		this.init();
 		this.run();
+		
 		this.moveOver();
 		this.moveOut();
 
@@ -65,7 +66,7 @@ window.onload=function(){
 			that.slides.style.left = -1*parseInt(that.slideWidth)*that.count+'px';
 			that.moveIndex();
 		},2000);
-		
+		this.bindIndex();
 	};
 
 	//give corresponding index number a class(background color)
@@ -82,12 +83,30 @@ window.onload=function(){
 		this.slides.onmouseover = function(){
 			clearInterval(that.timer);
 		}
+		//this.bindIndex();
 	}
 	MoveSlides.prototype.moveOut = function(){
 		var that = this;
 		this.slides.onmouseout = function(){
 			that.run();
 		}
+	}
+	//bind index with each slides
+	MoveSlides.prototype.bindIndex = function(){
+		var that = this;
+		for(var i=0;i<this.lis.length;i++){
+			this.lis[i].onclick = (function(index){
+				return function(){
+					clearInterval(that.timer);
+					for(var j=0;j<that.lis.length;j++){
+						that.lis[j].className="";
+					}
+					this.className = that.indexClass;
+					that.slides.style.left = -1*parseInt(that.slideWidth)*index+'px';
+				}
+			})(i);
+		}
+		
 	}
 
 	var myslides = new MoveSlides('pic-slider','nav','1000px',5,"slideOn");
@@ -110,20 +129,61 @@ window.onload=function(){
 	}
 	}
 	
+	//rolling news function
+	function Move(id){
+		var that = this;
+		this.ul = document.getElementById(id);
+		this.h = this.ul.offsetHeight;
+		this.ul.style.top = "0";
+		//get a copy of the news list
+		this.ul.innerHTML += this.ul.innerHTML;
+		this.start();
+		this.switch();
+	}
+	Move.prototype.start = function(){
+		var that = this;
+		//set timer to let the news move up
+		this.timer = setInterval(function(){
+			that.go();
+		},100);
+		
+	}
+	Move.prototype.switch = function(){
+		var that = this;
+		//set mouse over and out event for browing the news
+		this.ul.onmouseover = function(){
+			clearInterval(that.timer);
+		}
+		this.ul.onmouseout = function(){
+			that.start();
+		}
+	}
+	Move.prototype.go = function(){
+		var t = Math.abs(parseInt(this.ul.style.top));
+		//when the news list is moving out of the wrapper, pull back the list to let the top value = 0
+		if(t>=this.h){
+			this.ul.style.top = "0";
+		}else{
+			this.ul.style.top = parseInt(this.ul.style.top) - 5 +'px';
+		}
+	}
 
+	var movingNews = new Move('moving_news');
 
 	//moving text
 	var run_text = document.getElementById("run_text");
 	var welcome = document.getElementById("welcome");
-	var run_len = welcome.offsetWidth-run_text.offsetWidth;
 	var step = 5;
+	ele_move(run_text,welcome,step);
 
-	var text_run = setInterval(function(){
-		run_text.style.left = (run_text.offsetLeft + step) +'px';
-		if(run_text.offsetLeft>=run_len || run_text.offsetLeft<=0){
-			step = -step;
-		}
-	},100);
+	function ele_move(ele,wrapper,step){
+		var run_len = wrapper.offsetWidth-ele.offsetWidth;
+		setInterval(function(){
+			ele.style.left = (ele.offsetLeft + step) +'px';
+			if(ele.offsetLeft>=run_len || ele.offsetLeft<=0){
+				step = -step;
+			}
+		},100);
+	}
 
-	
 }
